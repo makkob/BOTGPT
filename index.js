@@ -3,36 +3,24 @@ const TelegramApi = require("node-telegram-bot-api");
 const { Configuration, OpenAIApi } = require("openai");
 require("dotenv").config();
 
-const TG_TOKEN = process.env.TG_TOKEN;
-const OPENAI_SECRET_KEY = process.env.OPENAI_SECRET_KEY;
+const { OPENAI_SECRET_KEY, TG_TOKEN } = process.env;
 
 const configuration = new Configuration({
-  apiKey: process.env.OPENAI_SECRET_KEY,
+  apiKey: OPENAI_SECRET_KEY,
 });
 const openai = new OpenAIApi(configuration);
 
 const bot = new TelegramApi(TG_TOKEN, { polling: true });
 
-// Initialize the OpenAI API client
-openai.api_key = OPENAI_SECRET_KEY;
-
 bot.on("message", async (msg) => {
-  const chatId = msg.chat.id;
-  const text = msg.text;
-
-  // Generate a response using the OpenAI API
-  const prompt = `Q: ${text}\nA:`;
-  // const response = await openai.completions.create({
-  //   engine: "davinci",
-  //   prompt: prompt,
-  //   max_tokens: 100,
-  // });
   try {
+    const chatId = msg.chat.id;
+    const text = msg.text;
     let completion = await openai.createCompletion({
       model: "text-davinci-003",
-      prompt: "Hello world",
+      prompt: text,
     });
-    // console.log(completion.data.choices[0].text);
+
     bot.sendMessage(chatId, completion.data.choices[0].text);
   } catch (error) {
     if (error.response) {
